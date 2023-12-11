@@ -29,7 +29,7 @@ export function Page() {
       <Connected>
       </Connected>
       <div className="bg-sky-blue">
-      <h1 className="text-3xl font-bold ">Let's Vote by Jean</h1>
+      <h1 className="text-3xl font-bold ">Vote by Jean</h1>
 
       
 

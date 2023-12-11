@@ -1,15 +1,22 @@
-'use client'
 import { useState, useEffect } from 'react';
-import { BaseError } from 'viem';
 import { type Address, useContractRead } from 'wagmi';
 
 import { wagmiContractConfig } from './contracts';
+
+// Créez une fonction de hook personnalisée pour récupérer les données de vote
+function useVoteData(voteNumber) {
+  return useContractRead({
+    ...wagmiContractConfig,
+    functionName: 'votes',
+    args: [BigInt(voteNumber)],
+  });
+}
 
 export function All_votes() {
   const [voteNumbers, setVoteNumbers] = useState([]);
   const [allVotes, setAllVotes] = useState([]);
 
-  // Récupérer la liste de tous les votes disponibles lors du chargement initial
+  // Utilisez la fonction de hook personnalisée pour récupérer les données de vote
   useEffect(() => {
     const fetchAllVotes = async () => {
       // Vous devrez adapter la fonction contractuelle pour récupérer la liste des votes
@@ -22,11 +29,7 @@ export function All_votes() {
       // Récupérer tous les votes au chargement initial
       const allVotesData = await Promise.all(
         voteNumbersArray.map(async (voteNumber) => {
-          const voteData = await useContractRead({
-            ...wagmiContractConfig,
-            functionName: 'votes',
-            args: [BigInt(voteNumber)],
-          });
+          const voteData = await useVoteData(voteNumber);
           return voteData?.toString() || '';
         })
       );
