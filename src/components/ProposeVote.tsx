@@ -25,25 +25,41 @@ export function ProposeVote() {
     e.preventDefault();
 
     // Basic validation (you can add more validations if needed)
-    if (question.trim() === '' || option1.trim() === '' || option2.trim() === '' || endDate === '' || endTime === '') {
+    if (
+      question.trim() === '' ||
+      option1.trim() === '' ||
+      option2.trim() === '' ||
+      endDate === '' ||
+      endTime === ''
+    ) {
       // Handle the case where any of the fields is empty
       return;
     }
 
     // Combine date and time to create a complete datetime string
-    const completeEndDate = `${endDate} ${endTime}`;
+    const completeDateTime = `${endDate}T${endTime}`;
+    const timestamp = Date.parse(completeDateTime);
 
-    // Submit the vote by calling the contract function
-    write({
-      args: [question, option1, option2, completeEndDate],
-    });
+    // Check if the timestamp is a valid number
+    if (!isNaN(timestamp)) {
+      // Convert the timestamp to BigInt
+      const completeEndDate = BigInt(timestamp / 1000); // Assuming your contract expects seconds
 
-    // Reset the fields after submission
-    setQuestion('');
-    setOption1('');
-    setOption2('');
-    setEndDate('');
-    setEndTime('');
+      // Submit the vote by calling the contract function
+      write({
+        args: [question, option1, option2, completeEndDate],
+      });
+
+      // Reset the fields after submission
+      setQuestion('');
+      setOption1('');
+      setOption2('');
+      setEndDate('');
+      setEndTime('');
+    } else {
+      // Handle the case where the date-time string is invalid
+      console.error('Invalid date-time format');
+    }
   };
 
   return (

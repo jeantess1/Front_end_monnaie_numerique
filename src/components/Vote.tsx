@@ -3,8 +3,10 @@ import React, { useState, useEffect } from 'react';
 import { useContractRead, useContractWrite, useWaitForTransaction } from 'wagmi';
 import { wagmiContractConfig } from './contracts';
 import { BaseError } from 'viem';
-let voteNumber:number;
-function DisplayVote({ voteNumber : any}) {
+
+let voteNumber: number;
+
+function DisplayVote({ voteNumber }: { voteNumber: number }) {
   const { data, isRefetching, refetch } = useContractRead({
     ...wagmiContractConfig,
     functionName: 'votes',
@@ -20,9 +22,9 @@ function DisplayVote({ voteNumber : any}) {
     data: receipt,
     isLoading: isPending,
     isSuccess,
-  } = useWaitForTransaction({ hash: data?.hash });
+  } = useWaitForTransaction({});
 
-  const handleVote = (voteForA:any) => async () => {
+  const handleVote = (voteForA: any) => async () => {
     try {
       await write({
         args: [BigInt(voteNumber), voteForA],
@@ -53,19 +55,22 @@ function DisplayVote({ voteNumber : any}) {
         borderRadius: '10px',
       }}
     >
-      <p style={{textAlign: 'right'}}>
+      <p style={{ textAlign: 'right' }}>
         <strong>Start Date:</strong> {startDate}
       </p>
-      <p style={{textAlign: 'right'}}>
+      <p style={{ textAlign: 'right' }}>
         <strong>End Date:</strong> {endDate}
       </p>
       <p>
-        <center><strong>Vote {voteId}:</strong></center>
+        <center>
+          <strong>Vote {voteId}:</strong>
+        </center>
       </p>
       <p>
-        <center><strong>Question:</strong> {question}</center>
+        <center>
+          <strong>Question:</strong> {question}
+        </center>
       </p>
-      
 
       <center>
         <div>
@@ -136,7 +141,7 @@ function DisplayVote({ voteNumber : any}) {
 
       {isLoading && <div>Checking wallet...</div>}
       {isPending && <div>Transaction pending...</div>}
-      {isError && <div>{error?.shortMessage}</div>}
+      {isError && <div>{(error as BaseError)?.shortMessage}</div>}
       {isSuccess && <div>Vote successful!</div>}
     </div>
   );
@@ -149,7 +154,7 @@ export function Vote() {
   const { data: voteCount, isRefetching: voteCountRefetching, refetch: refetchVoteCount } = useContractRead({
     ...wagmiContractConfig,
     functionName: 'voteCount',
-    args: [],
+    args: undefined,
   });
 
   useEffect(() => {
@@ -181,23 +186,6 @@ export function Vote() {
         />
         <br />
         <DisplayVote voteNumber={voteNumber} />
-      </div>
-
-      <div>
-        <button
-          onClick={refetchVoteCount}
-          style={{
-            border: '2px solid blue',
-            padding: '4px',
-            margin: '5px',
-            cursor: 'pointer',
-            backgroundColor: '#ADD8E6',
-            color: 'blue',
-            borderRadius: '5px',
-          }}
-        >
-          Refresh
-        </button>
       </div>
 
       {voteCountRefetching && <p>Loading...</p>}
