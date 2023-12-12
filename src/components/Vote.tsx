@@ -1,12 +1,10 @@
 'use client'
-import React from 'react';
-import { useState, useEffect } from 'react';
-import { BaseError } from 'viem';
+import React, { useState, useEffect } from 'react';
 import { useContractRead, useContractWrite, useWaitForTransaction } from 'wagmi';
-
 import { wagmiContractConfig } from './contracts';
-
-function Display_vote({ voteNumber, onVote }) {
+import { BaseError } from 'viem';
+let voteNumber:number;
+function DisplayVote({ voteNumber : any}) {
   const { data, isRefetching, refetch } = useContractRead({
     ...wagmiContractConfig,
     functionName: 'votes',
@@ -24,7 +22,7 @@ function Display_vote({ voteNumber, onVote }) {
     isSuccess,
   } = useWaitForTransaction({ hash: data?.hash });
 
-  const handleVote = (voteForA) => async () => {
+  const handleVote = (voteForA:any) => async () => {
     try {
       await write({
         args: [BigInt(voteNumber), voteForA],
@@ -36,11 +34,14 @@ function Display_vote({ voteNumber, onVote }) {
   };
 
   const voteDetails = data?.toString().split(',');
-  const [voteId, question, optionA, optionB, votesA, votesB, isClosed] = voteDetails || [];
+  const [voteId, question, optionA, optionB, votesA, votesB, isClosed, startTimestamp, endTimestamp] = voteDetails || [];
 
   const totalVotes = Number(votesA) + Number(votesB);
   const percentVotesA = totalVotes > 0 ? (Number(votesA) / totalVotes) * 100 : 0;
   const percentVotesB = totalVotes > 0 ? (Number(votesB) / totalVotes) * 100 : 0;
+
+  const startDate = new Date(Number(startTimestamp) * 1000).toLocaleString();
+  const endDate = new Date(Number(endTimestamp) * 1000).toLocaleString();
 
   return (
     <div
@@ -52,77 +53,91 @@ function Display_vote({ voteNumber, onVote }) {
         borderRadius: '10px',
       }}
     >
+      <p style={{textAlign: 'right'}}>
+        <strong>Start Date:</strong> {startDate}
+      </p>
+      <p style={{textAlign: 'right'}}>
+        <strong>End Date:</strong> {endDate}
+      </p>
+      <p>
+        <center><strong>Vote {voteId}:</strong></center>
+      </p>
+      <p>
+        <center><strong>Question:</strong> {question}</center>
+      </p>
+      
+
+      <center>
+        <div>
+          <button
+            disabled={isLoading}
+            onClick={handleVote(true)}
+            style={{
+              border: '2px solid green',
+              padding: '10px',
+              margin: '5px',
+              cursor: 'pointer',
+              backgroundColor: '#4CAF50',
+              color: 'white',
+              borderRadius: '5px',
+            }}
+          >
+            {optionA}
+          </button>
+          <button
+            disabled={isLoading}
+            onClick={handleVote(false)}
+            style={{
+              border: '2px solid red',
+              padding: '10px',
+              margin: '5px',
+              cursor: 'pointer',
+              backgroundColor: '#FF5733',
+              color: 'white',
+              borderRadius: '5px',
+            }}
+          >
+            {optionB}
+          </button>
+        </div>
+      </center>
+
+      <div>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <div
+            style={{
+              width: `${percentVotesA}%`,
+              height: '10px',
+              backgroundColor: 'green',
+              borderTopLeftRadius: '5px',
+              borderBottomLeftRadius: '5px',
+            }}
+          />
+          <div
+            style={{
+              width: `${percentVotesB}%`,
+              height: '10px',
+              backgroundColor: 'red',
+              borderTopRightRadius: '5px',
+              borderBottomRightRadius: '5px',
+            }}
+          />
+        </div>
+      </div>
+
       <div>
         <p>
-          <center><strong>Vote {voteId}:</strong></center>
+          <strong>Votes for {optionA}:</strong> {votesA}
         </p>
         <p>
-          <center><strong>Question:</strong> {question}</center>
+          <strong>Votes for {optionB}:</strong> {votesB}
         </p>
-      
-        <center>
-          <div>
-            <button
-              disabled={isLoading}
-              onClick={handleVote(true)}
-              style={{
-                border: '2px solid green',
-                padding: '10px',
-                margin: '5px',
-                cursor: 'pointer',
-                backgroundColor: '#4CAF50',
-                color: 'white',
-                borderRadius: '5px',
-              }}
-            >
-              {optionA}
-            </button>
-            <button
-              disabled={isLoading}
-              onClick={handleVote(false)}
-              style={{
-                border: '2px solid red',
-                padding: '10px',
-                margin: '5px',
-                cursor: 'pointer',
-                backgroundColor: '#FF5733',
-                color: 'white',
-                borderRadius: '5px',
-              }}
-            >
-              {optionB}
-            </button>
-          </div>
-        </center>
-
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <div
-              style={{
-                width: `${percentVotesA}%`,
-                height: '10px',
-                backgroundColor: 'green',
-                borderTopLeftRadius: '5px',
-                borderBottomLeftRadius: '5px',
-              }}
-            />
-            <div
-              style={{
-                width: `${percentVotesB}%`,
-                height: '10px',
-                backgroundColor: 'red',
-                borderTopRightRadius: '5px',
-                borderBottomRightRadius: '5px',
-              }}
-            />
-          </div>
-        </div>
-
-        {isLoading && <div>Checking wallet...</div>}
-        {isPending && <div>Transaction pending...</div>}
-        {isError && <div>{error?.shortMessage}</div>}
-        {isSuccess && <div>Vote successful!</div>}
       </div>
+
+      {isLoading && <div>Checking wallet...</div>}
+      {isPending && <div>Transaction pending...</div>}
+      {isError && <div>{error?.shortMessage}</div>}
+      {isSuccess && <div>Vote successful!</div>}
     </div>
   );
 }
@@ -165,7 +180,7 @@ export function Vote() {
           }}
         />
         <br />
-        <Display_vote voteNumber={voteNumber} />
+        <DisplayVote voteNumber={voteNumber} />
       </div>
 
       <div>
@@ -190,7 +205,7 @@ export function Vote() {
         <div>
           {Array.from({ length: totalVotes }, (_, index) => index + 1).map((voteIndex) => (
             <div key={voteIndex}>
-              <Display_vote voteNumber={voteIndex} />
+              <DisplayVote voteNumber={voteIndex} />
             </div>
           ))}
         </div>
